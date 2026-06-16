@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  pycaret-app:
+    build: .
+    ports:
+      - "8501:8501"
+    volumes:
+      # Volume pour développement : réflexion automatique des changements
+      - .:/app
+    environment:
+      # Variables Streamlit pour meilleure performance
+      STREAMLIT_SERVER_HEADLESS: true
+      STREAMLIT_SERVER_MAXUPLOADSIZE: 200
+    # Garder le container en vie
+    stdin_open: true
+    tty: true
