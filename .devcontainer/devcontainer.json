@@ -1,6 +1,6 @@
 {
   "name": "EVCopilot Streamlit PyCAReT",
-  "dockerfile": "../Dockerfile",
+  "dockerFile": "../Dockerfile",
   "context": "..",
   "remoteUser": "root",
   "forwardPorts": [8501],
