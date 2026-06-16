@@ -25,8 +25,8 @@ EXPOSE 8501
 # Healthcheck pour Streamlit
 HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health || exit 1
 
-# Commande par défaut : lancer l'application Streamlit
-CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
-
 RUN echo "DOCKERFILE EXECUTE AVEC SUCCES"
 RUN python --version
+
+# Commande par défaut : lancer l'application Streamlit
+CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
