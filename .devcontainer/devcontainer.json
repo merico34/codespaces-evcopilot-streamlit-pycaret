@@ -1,16 +1,14 @@
 {
-  "name": "EVCopilot Streamlit PyCAReT",
-  "dockerFile": "../Dockerfile",
-  "context": "..",
-  "remoteUser": "root",
+  "name": "streamlit-pycaret",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
   "forwardPorts": [8501],
   "customizations": {
-    "codespaces": {
-      "openInEditorCommand": "workspaceOpen"
-    },
     "vscode": {
       "extensions": [
-        "ms-python.python"
+        "ms-python.python",
+        "ms-toolsai.jupyter"
       ]
     }
   }
