@@ -4,155 +4,135 @@ This file helps Copilot and other AI assistants work effectively in this codebas
 
 ## Project Overview
 
-**Add a brief description of what this project does.** For example:
-- What problem does it solve?
-- What type of application is it (API, frontend, CLI tool, library)?
-- Main technology stack?
+A **Streamlit web application** for automated machine learning using PyCaret. The app provides an interactive UI for loading datasets and running ML classification models without requiring deep ML expertise. It's containerized with Docker for easy deployment and reproducibility.
+
+- **Type**: Web UI for ML automation
+- **Tech Stack**: Streamlit, PyCaret, Pandas, NumPy, scikit-learn, Docker
+- **Python**: 3.10+
 
 ## Build, Test, and Lint Commands
 
-Update these commands based on your project setup. Include variations for common workflows.
-
 ### Install Dependencies
 ```bash
-# Node.js projects
-npm install
-# or
-yarn install
-
-# Python projects
 pip install -r requirements.txt
-# or
-poetry install
-
-# Go projects
-go mod download
 ```
 
-### Build
+### Run Locally (Direct Python)
 ```bash
-# Example for Node.js
-npm run build
+# Install first if needed
+pip install -r requirements.txt
 
-# Example for Python
-python setup.py build
-
-# Example for Go
-go build ./cmd/myapp
+# Run the Streamlit app
+streamlit run app.py
 ```
+The app will be available at `http://localhost:8501`
 
-### Run Tests
+### Docker-Based Development
 ```bash
-# Run all tests
-npm test
-# or
-pytest
+# Build the image
+docker-compose build
 
-# Run specific test file
-npm test -- src/path/to/test.js
-pytest src/path/to/test.py
+# Run the container
+docker-compose up
 
-# Run tests in watch mode (if available)
-npm test -- --watch
-pytest-watch
+# View logs
+docker-compose logs -f pycaret-app
+
+# Stop the container
+docker-compose down
 ```
+The app will be available at `http://localhost:8501`
 
-### Run Linting
-```bash
-# Lint code
-npm run lint
-
-# Fix linting issues (if available)
-npm run lint -- --fix
-```
-
-### Local Development
-```bash
-# Start development server (if applicable)
-npm run dev
-# or
-python app.py
-```
+### Testing & Linting
+No automated test suite exists. Manual testing through the Streamlit UI is the primary validation method.
 
 ## Architecture
 
 ### Project Structure
-Describe the high-level organization:
-- **src/**: Source code directory structure
-- **tests/**: Test files organization
-- **docs/**: Documentation
-- List any domain-specific or module-based organization patterns
+- **app.py**: Single-file Streamlit application (main entry point)
+- **requirements.txt**: Python dependencies with pinned versions for reproducibility
+- **Dockerfile**: Container setup; installs system dependencies (build-essential, libgomp1 for OpenMP support)
+- **docker-compose.yml**: Orchestrates containerized development with live code volume mounting
+
+No complex directory structure—this is a simple, single-page Streamlit app.
 
 ### Key Components
-**Describe the major systems and how they interact.** For example:
-- **Authentication Module**: How users are authenticated (JWT, OAuth, etc.)
-- **Database Layer**: ORM, migrations, connection pooling approach
-- **API Layer**: REST conventions, middleware stack, routing patterns
-- **Frontend Architecture**: State management (Redux, Vuex, etc.), component structure
 
-Example format:
-> The API layer (src/api/) uses Express middleware to handle routing. Requests flow through auth middleware → validation → business logic → response formatting. Database queries are centralized in src/db/ and use [ORM name] for type safety.
+**Streamlit Frontend (app.py)**
+- Uses Streamlit's built-in UI components for a zero-configuration web interface
+- Displays version information for installed packages
+- Shows Docker commands for quick reference
+- Designed to be extended with data upload and ML model execution flows
+
+**ML Pipeline (via PyCaret)**
+- PyCaret abstracts scikit-learn and other ML libraries
+- Key functions used: `setup()` (data preprocessing), `compare_models()` (model selection), `pull()` (results)
+- Runs classification workflows with automated hyperparameter tuning
 
 ### Data Flow
-If relevant, describe key workflows. For example:
-- How user requests flow through the system
-- How data is transformed between layers
-- Async/event-driven patterns used
+1. User accesses Streamlit app at `http://localhost:8501`
+2. User uploads dataset via Streamlit file uploader (typical workflow)
+3. PyCaret `setup()` prepares data (encoding, scaling, feature engineering)
+4. `compare_models()` trains multiple classifiers and ranks them
+5. Results displayed via Streamlit tables/charts
+
+### Docker & Containerization
+- **Port**: 8501 (Streamlit default)
+- **Healthcheck**: `curl --fail http://localhost:8501/_stcore/health || exit 1`
+- **Environment Variables**: `STREAMLIT_SERVER_HEADLESS=true`, `STREAMLIT_SERVER_MAXUPLOADSIZE=200`
+- **Volume Mounts**: `.:/app` for live reloading during development
+- **System Dependencies**: `build-essential` and `libgomp1` ensure OpenMP (used by scikit-learn) and compilation tools are available
 
 ## Code Conventions
 
-### Naming Conventions
-- File naming: (e.g., PascalCase for components, kebab-case for utilities)
-- Variable/function naming patterns
-- Constants (UPPER_SNAKE_CASE, etc.)
+### Streamlit-Specific Patterns
+- **Page Configuration**: `st.set_page_config()` should be the first Streamlit command
+- **Layout**: Use `st.columns()` for multi-column layouts, `st.tabs()` for tab navigation
+- **User Input**: Upload data with `st.file_uploader()`, collect parameters with `st.selectbox()`, `st.slider()`, etc.
+- **Interactivity**: Use Streamlit's reactive model—script reruns on every user interaction
+- **Caching**: Use `@st.cache_data` for expensive computations to avoid recalculation on reruns
+
+### PyCaret Integration
+- Always call `pycaret.classification.setup()` before running ML tasks (handles preprocessing)
+- Use `compare_models()` for automated model selection
+- Use `pull()` to extract results as a Pandas DataFrame for display
+- Remember that PyCaret is opinionated—read its documentation on supported data types and missing value handling
 
 ### File Organization
-- How files are grouped within directories
-- Colocation patterns (e.g., tests next to source files vs. separate test directory)
-- Configuration file locations and purposes
+- **app.py**: Keep logic simple; add helper functions as needed but within the same file for now
+- If the app grows: consider splitting into `pages/` subdirectory (Streamlit's multi-page app feature) and `utils/` for helper functions
 
-### Code Patterns
-- Error handling approach (exceptions, error codes, Result types)
-- Logging patterns (where to log, what level)
-- Comment style and when to use them
-- Import/require conventions
-
-### Testing Patterns
-- Test naming conventions (e.g., `test_*.py` or `*.test.js`)
-- Test structure (arrange-act-assert, BDD style, etc.)
-- Mocking approach (manual, libraries like Jest/Sinon, etc.)
-- Coverage expectations if applicable
-
-### Commit Conventions
-- Commit message format (if using Conventional Commits or similar)
-- Branching strategy (git flow, trunk-based, etc.)
-- PR review expectations
-
-## Database (if applicable)
-- Migrations approach (manual SQL, ORM migrations, etc.)
-- Seeding data for development
-- Schema documentation location
-- Connection pooling configuration
+### Import Style
+- Standard Python imports first, then third-party (streamlit, pycaret, pandas, etc.)
+- No complex import aliasing; use standard conventions (`import pandas as pd`, `import numpy as np`)
 
 ## Environment Configuration
-- Required environment variables (document in .env.example)
-- How environment differs between development, testing, and production
-- Secrets management approach
 
-## External Services / APIs
-- Which external services does this project integrate with?
-- How to set up credentials locally for development
-- Rate limiting or other constraints to be aware of
+**No `.env` file needed** for basic operation. If adding configuration:
+- Streamlit config: Use `.streamlit/config.toml` (not required for development)
+- Python environment: Managed via `docker-compose.yml` environment variables
+- Development vs. Production: Currently no distinction; docker-compose is for local dev only
 
 ## Common Issues and Solutions
 
-Document known gotchas or common problems developers encounter:
-- Common setup issues and how to resolve them
-- Compatibility constraints (Node.js version, Python version, etc.)
-- Platform-specific issues (Windows/Mac/Linux differences)
+### PyCaret Compatibility
+- **Missing OpenMP**: If you see `libgomp1 not found` errors, the Dockerfile already installs `libgomp1` as a system dependency
+- **Scikit-learn Warnings**: NumPy and scikit-learn versions are pinned for compatibility; avoid upgrading them independently
+- **Memory Issues**: PyCaret's `compare_models()` can be memory-intensive; set `n_select=3` or similar to limit the number of models trained
+
+### Streamlit Quirks
+- **Hot Reloads**: Changes to `app.py` trigger script reruns; be aware that top-level code runs on every interaction
+- **State Management**: Use `st.session_state` to persist data across reruns
+- **Upload Size Limit**: The docker-compose sets `STREAMLIT_SERVER_MAXUPLOADSIZE=200` (MB); adjust in `docker-compose.yml` if needed
+
+### Docker Debugging
+- **Port Already in Use**: If `8501` is taken, change the port mapping in `docker-compose.yml`: `- "8502:8501"`
+- **Container Won't Start**: Check logs with `docker-compose logs pycaret-app`; often due to missing dependencies or syntax errors in `app.py`
+- **Live Volume Mount Not Working**: Ensure `.:/app` is correctly specified; on Windows/Mac, enable file sharing in Docker Desktop settings
 
 ## Useful Resources
-- Link to main README if more detailed project info exists
-- Link to CONTRIBUTING.md for contribution guidelines
-- Architecture decision records (ADRs) location if maintained
-- Internal wiki or documentation
+
+- **Streamlit Docs**: https://docs.streamlit.io (for UI components, caching, deployment)
+- **PyCaret Docs**: https://pycaret.gitbook.io/docs (for ML setup, model comparison, result interpretation)
+- **Docker Docs**: https://docs.docker.com (for debugging container issues)
+- **Scikit-learn Docs**: https://scikit-learn.org (underlying ML library; useful for hyperparameter understanding)
