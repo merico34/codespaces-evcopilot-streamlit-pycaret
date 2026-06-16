@@ -8,6 +8,5 @@
     "codespaces": {
       "openInEditorCommand": "workspaceOpen"
     }
-  },
-  "postCreateCommand": "pip install -r requirements.txt"
+  }
 }
